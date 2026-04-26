@@ -18,7 +18,12 @@ echo "==> 2/5 install uv if missing"
 if ! command -v uv >/dev/null 2>&1; then
   curl -LsSf https://astral.sh/uv/install.sh | sh
   export PATH="$HOME/.local/bin:$PATH"
+  # Persist for future shells.
+  if ! grep -q 'HOME/.local/bin' ~/.bashrc 2>/dev/null; then
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+  fi
 fi
+export PATH="$HOME/.local/bin:$PATH"
 uv --version
 
 echo "==> 3/5 install project deps into .venv"
