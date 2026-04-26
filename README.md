@@ -45,7 +45,7 @@ gainmaxxing/
 │   ├── graph.py       # create_agent → exports `graph` (loads skills/*.md)
 │   ├── db.py          # Supabase client singleton
 │   └── tools/
-│       ├── entries.py # log_meal, edit, delete, day/range summaries
+│       ├── entries.py # log_entry, edit, delete, day/range summaries
 │       ├── meals.py   # catalog CRUD
 │       └── _shared.py # MealType, ok/err helpers, MX-tz today()
 ├── server/

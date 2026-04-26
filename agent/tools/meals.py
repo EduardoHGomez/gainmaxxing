@@ -14,12 +14,16 @@ class AddMealInput(BaseModel):
     food: str
     calories: int = Field(ge=0, lt=10000)
     protein_g: float = Field(ge=0, lt=500)
+    portion: Optional[str] = Field(
+        default=None,
+        description="Portion size the calories/protein refer to (e.g., '1 bowl', '200g', '2 tortillas').",
+    )
     meal_type: Optional[MealType] = None
     notes: Optional[str] = None
 
 
 @tool("add_meal", args_schema=AddMealInput)
-def add_meal(name, food, calories, protein_g, meal_type=None, notes=None):
+def add_meal(name, food, calories, protein_g, portion=None, meal_type=None, notes=None):
     """Add a meal to the user's curated catalog of foods that work."""
     try:
         row = {
@@ -27,6 +31,7 @@ def add_meal(name, food, calories, protein_g, meal_type=None, notes=None):
             "food": food,
             "calories": calories,
             "protein_g": protein_g,
+            "portion": portion,
             "meal_type": meal_type,
             "notes": notes,
         }
@@ -42,12 +47,13 @@ class UpdateMealInput(BaseModel):
     food: Optional[str] = None
     calories: Optional[int] = Field(default=None, ge=0, lt=10000)
     protein_g: Optional[float] = Field(default=None, ge=0, lt=500)
+    portion: Optional[str] = None
     meal_type: Optional[MealType] = None
     notes: Optional[str] = None
 
 
 @tool("update_meal", args_schema=UpdateMealInput)
-def update_meal(id, name=None, food=None, calories=None, protein_g=None, meal_type=None, notes=None):
+def update_meal(id, name=None, food=None, calories=None, protein_g=None, portion=None, meal_type=None, notes=None):
     """Update a catalog meal by id. Only fields provided are updated."""
     try:
         patch = {
@@ -57,6 +63,7 @@ def update_meal(id, name=None, food=None, calories=None, protein_g=None, meal_ty
                 "food": food,
                 "calories": calories,
                 "protein_g": protein_g,
+                "portion": portion,
                 "meal_type": meal_type,
                 "notes": notes,
             }.items()

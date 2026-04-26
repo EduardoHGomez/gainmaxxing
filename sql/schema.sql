@@ -24,6 +24,7 @@ create table public.meals (
   updated_at    timestamptz not null default now(),
   name          text        not null,
   food          text        not null,
+  portion       text,
   meal_type     text        check (meal_type in ('breakfast','lunch','dinner','snack','pre-workout','post-workout','other')),
   calories      integer     not null check (calories >= 0 and calories < 10000),
   protein_g     numeric(5,1)         check (protein_g >= 0 and protein_g < 500),

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date as date_cls
+from datetime import date as date_cls, datetime
 from typing import Optional
 
 from langchain.tools import tool
@@ -10,7 +10,7 @@ from agent.db import supabase
 from agent.tools._shared import MealType, err, ok, today_mx
 
 
-class LogMealInput(BaseModel):
+class LogEntryInput(BaseModel):
     food: str = Field(description="What was eaten, e.g. '2 tortillas with chicken'")
     calories: int = Field(ge=0, lt=10000)
     protein_g: float = Field(ge=0, lt=500)
@@ -20,11 +20,15 @@ class LogMealInput(BaseModel):
         default=None,
         description="ISO date YYYY-MM-DD. Defaults to today in America/Mexico_City.",
     )
+    created_at: Optional[datetime] = Field(
+        default=None,
+        description="ISO timestamp for when the meal was eaten (e.g. 2026-04-25T08:30:00-06:00). Defaults to now. Use when backdating a meal logged late.",
+    )
 
 
-@tool("log_meal", args_schema=LogMealInput)
-def log_meal(food, calories, protein_g, meal_type=None, notes=None, date=None):
-    """Record a meal or snack the user just ate."""
+@tool("log_entry", args_schema=LogEntryInput)
+def log_entry(food, calories, protein_g, meal_type=None, notes=None, date=None, created_at=None):
+    """Record a meal or snack the user just ate. Pass `created_at` to backdate."""
     try:
         row = {
             "food": food,
@@ -35,6 +39,8 @@ def log_meal(food, calories, protein_g, meal_type=None, notes=None, date=None):
         }
         if date is not None:
             row["date"] = date.isoformat()
+        if created_at is not None:
+            row["created_at"] = created_at.isoformat()
         res = supabase().table("entries").insert(row).execute()
         return ok(res.data[0] if res.data else None)
     except Exception as e:
@@ -49,10 +55,14 @@ class EditLogEntryInput(BaseModel):
     meal_type: Optional[MealType] = None
     notes: Optional[str] = None
     date: Optional[date_cls] = None
+    created_at: Optional[datetime] = Field(
+        default=None,
+        description="Correct the timestamp of when the meal was eaten (e.g. 2026-04-25T08:30:00-06:00).",
+    )
 
 
 @tool("edit_log_entry", args_schema=EditLogEntryInput)
-def edit_log_entry(id, food=None, calories=None, protein_g=None, meal_type=None, notes=None, date=None):
+def edit_log_entry(id, food=None, calories=None, protein_g=None, meal_type=None, notes=None, date=None, created_at=None):
     """Update fields of an existing log entry by id. Only fields provided are updated."""
     try:
         patch = {
@@ -64,6 +74,7 @@ def edit_log_entry(id, food=None, calories=None, protein_g=None, meal_type=None,
                 "meal_type": meal_type,
                 "notes": notes,
                 "date": date.isoformat() if date else None,
+                "created_at": created_at.isoformat() if created_at else None,
             }.items()
             if v is not None
         }
@@ -155,7 +166,7 @@ def get_range_summary(start_date, end_date):
 
 
 ENTRY_TOOLS = [
-    log_meal,
+    log_entry,
     edit_log_entry,
     delete_log_entry,
     get_day_summary,

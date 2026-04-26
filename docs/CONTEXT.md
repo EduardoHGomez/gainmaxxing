@@ -55,7 +55,7 @@ Same shape, plus `name` (unique, case-insensitive) and `updated_at` (auto-bumped
 
 | Tool | Table | What it does |
 |---|---|---|
-| `log_meal` | entries | insert what the user just ate |
+| `log_entry` | entries | insert what the user just ate |
 | `edit_log_entry` | entries | partial update by id |
 | `delete_log_entry` | entries | delete by id |
 | `get_day_summary` | entries | rows + totals for a single day (defaults today MX) |
