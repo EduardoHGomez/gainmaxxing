@@ -1,0 +1,11 @@
+.env
+.venv/
+skills/PROFILE.md
+venv/
+__pycache__/
+*.pyc
+.python-version
+checkpoint.db
+*.db-journal
+.langgraph_api/
+.DS_Store
