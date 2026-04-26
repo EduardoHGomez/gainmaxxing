@@ -20,22 +20,27 @@ SYSTEM_PROMPT = "\n\n".join(
 
 
 def build_model() -> BaseChatModel:
-    """Primary model. Haiku 4.5 — cheap, fast, warm tone. Swap to claude-sonnet-4-6 or claude-opus-4-7 if you need more."""
+    """Primary model. Haiku 4.5 — cheap, fast, warm tone. Swap to sonnet/opus if needed."""
     return ChatAnthropic(model="claude-haiku-4-5")
 
 
-# Fallback chain: if Haiku fails (rate limit, 5xx, provider down), try Sonnet, then OpenAI.
-# Triggers only on API errors, not on poor answers. Cross-provider redundancy.
+# Cross-provider fallback: triggers on API errors only (rate limit, 5xx, outage).
 FALLBACK = ModelFallbackMiddleware(
     ChatAnthropic(model="claude-sonnet-4-6"),
     ChatOpenAI(model="gpt-5.4-mini"),
 )
 
 
-# No checkpointer here: langgraph dev provides one in-memory; the server/ entry point binds a SqliteSaver.
-graph = create_agent(
-    model=build_model(),
-    tools=TOOLS,
-    system_prompt=SYSTEM_PROMPT,
-    middleware=[FALLBACK],
-)
+def make_graph(checkpointer=None):
+    """Build the agent. checkpointer=None for langgraph dev; pass SqliteSaver for the FastAPI/Twilio path."""
+    return create_agent(
+        model=build_model(),
+        tools=TOOLS,
+        system_prompt=SYSTEM_PROMPT,
+        middleware=[FALLBACK],
+        checkpointer=checkpointer,
+    )
+
+
+# Default export for langgraph dev — no checkpointer (server provides one in-memory).
+graph = make_graph()

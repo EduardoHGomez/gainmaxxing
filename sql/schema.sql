@@ -55,17 +55,6 @@ for each row execute function public.set_updated_at();
 --   authenticated -> a logged-in user (we don't use Supabase Auth here)
 --   service_role  -> mapped to the "secret" / legacy "service_role" key,
 --                    BYPASSES RLS by design
---
--- The bot uses the service_role key (server-side only). RLS is enabled so
--- that if the anon/authenticated keys ever leak, no rows are exposed.
--- We add zero policies for anon/authenticated, which means: "RLS denies
--- everything for those roles." service_role still has full access because
--- it bypasses RLS at the engine level.
---
--- The grants below are explicit so the schema is self-documenting and
--- portable to non-Supabase Postgres: revoke from anon/authenticated, grant
--- to service_role.
--- =========================================================================
 
 alter table public.entries enable row level security;
 alter table public.meals   enable row level security;
